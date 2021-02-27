@@ -5,29 +5,81 @@ close all
 BW = (imread('circles.png'));
 BW = rgb2gray(BW);
 BW = BW/255;
+% a = getPoints(68,18,BW);
+% 
+% b = nonZero(a);
+% 
+% c = logicalAND(a(2), a(4), a(6))
+% 
+% g = checkTransitions([1, 0, 1, 0, 1, 0, 1, 1, 0])
+% 
+% d = getPoints(0,0,BW);
+% 
+% e = nonZero(d);
+% 
+% f = logicalAND(d(4), d(6), d(8))
 
-a = getPoints(68,18,BW);
+tImg = BW
+same = 0
+prevI = tImg
+while same == 0
+    tImg = step1(tImg);
+    tImg = step2(tImg);
+    same = sameArray(prevI, tImg);
+    prevI = tImg;
+end
 
-b = nonZero(a);
+BW = BW*255
+tImg = tImg*255
 
-c = logicalAND(a(2), a(4), a(6))
+figure()
+imshow(BW)
 
-g = checkTransitions([1, 0, 1, 0, 1, 0, 1, 1, 0])
+figure()
+imshow(tImg)
 
-d = getPoints(0,0,BW);
-
-e = nonZero(d);
-
-f = logicalAND(d(4), d(6), d(8))
-
-function result = skeleton(img)
-    [rows,cols] = size(img)
+function tImg = step1(img)
+    [rows,cols] = size(img);
+    tImg = img;
+    %Step 1
     for i = 1:rows
         for j = 1:cols
             %Loop through Image
+            pWindow = getPoints(i, j, img);
+            a = nonZero(pWindow);
+            b = checkTransitions(pWindow);
+            c = logicalAND(pWindow(2), pWindow(4), pWindow(6));
+            d = logicalAND(pWindow(4), pWindow(6), pWindow(8));
+            
+           if a == 1 && b == 1 &&...
+                   c == 1 && d == 1
+               tImg(i, j) = 0;
+           end
+            
         end
     end
-    result = 0
+end
+
+function tImg = step2(img)
+    [rows,cols] = size(img);
+    tImg = img;
+    %Step 1
+    for i = 1:rows
+        for j = 1:cols
+            %Loop through Image
+            pWindow = getPoints(i, j, img);
+            a = nonZero(pWindow);
+            b = checkTransitions(pWindow);
+            c = logicalAND(pWindow(2), pWindow(4), pWindow(8));
+            d = logicalAND(pWindow(2), pWindow(6), pWindow(8));
+            
+           if a == 1 && b == 1 &&...
+                   c == 1 && d == 1
+               tImg(i, j) = 0;
+           end
+            
+        end
+    end
 end
 
 function pArray = getPoints(x, y, array)
@@ -41,7 +93,7 @@ function pArray = getPoints(x, y, array)
     p7 = checkPoint(x - 1, y + 1, array);
     p8 = checkPoint(x - 1, y, array);
     p9 = checkPoint(x - 1, y - 1, array);
-    pArray = [p1, p2, p3, p4, p5, p6, p7, p8,p9]
+    pArray = [p1, p2, p3, p4, p5, p6, p7, p8,p9];
 end
 
 function point = checkPoint(x, y, array)
@@ -66,27 +118,42 @@ function result = nonZero(pArray)
     end
 end
 
-function sum = checkTransitions(pArray)
+function result = checkTransitions(pArray)
     %T(p1)
     N = width(pArray);
     sum = 0;
-    prevP = pArray(1)
+    prevP = pArray(1);
+    
     for i = 2: N
         if prevP < pArray(i)
-            sum = sum + 1
+            sum = sum + 1;
         end
-        prevP = pArray(i)
+        prevP = pArray(i);
+    end
+    
+    if sum == 1
+        result = true;
+    else
+        result = false;
     end
 end
 
 function result = logicalAND(a, b, c)
     %p2 . p4 . p6
     %p4 . p6 . p8
-    sum = a + b + c
-     if sum == 3
-         result = true
+    sum = a + b + c;
+     if sum == 0
+         result = true;
      else
-         result = false
+         result = false;
      end
      
+end
+
+function result = sameArray(pred, target)
+    if pred == target
+        result = true;
+    else
+        result = false;
+    end
 end
