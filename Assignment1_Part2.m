@@ -2,9 +2,11 @@ clc
 clear all
 close all
 
-BW = (imread('circles.png'));
-BW = rgb2gray(BW);
-BW = BW/255;
+BW = (imread('images/licoln.tif'));
+%BW = (imread('images/circles.png'));
+%BW = rgb2gray(BW);
+%BW = BW/255;
+
 % a = getPoints(68,18,BW);
 % 
 % b = nonZero(a);
@@ -19,24 +21,26 @@ BW = BW/255;
 % 
 % f = logicalAND(d(4), d(6), d(8))
 
-tImg = BW
-same = 0
-prevI = tImg
+tImg = BW;
+same = 0;
+prevI = tImg;
+counter = 0
 while same == 0
     tImg = step1(tImg);
     tImg = step2(tImg);
     same = sameArray(prevI, tImg);
     prevI = tImg;
+    counter = counter + 1;
 end
 
-BW = BW*255
-tImg = tImg*255
+BW = BW*255;
+tImg = tImg*255;
 
-figure()
-imshow(BW)
+figure();
+imshow(BW);
 
-figure()
-imshow(tImg)
+figure();
+imshow(tImg);
 
 function tImg = step1(img)
     [rows,cols] = size(img);
@@ -51,8 +55,8 @@ function tImg = step1(img)
             c = logicalAND(pWindow(2), pWindow(4), pWindow(6));
             d = logicalAND(pWindow(4), pWindow(6), pWindow(8));
             
-           if a == 1 && b == 1 &&...
-                   c == 1 && d == 1
+           if a == true && b == true &&...
+                   c == true && d == true
                tImg(i, j) = 0;
            end
             
@@ -73,8 +77,8 @@ function tImg = step2(img)
             c = logicalAND(pWindow(2), pWindow(4), pWindow(8));
             d = logicalAND(pWindow(2), pWindow(6), pWindow(8));
             
-           if a == 1 && b == 1 &&...
-                   c == 1 && d == 1
+           if a == true && b == true &&...
+                   c == true && d == true
                tImg(i, j) = 0;
            end
             
@@ -109,6 +113,7 @@ function result = nonZero(pArray)
     N = width(pArray);
     sum = 0;
     for i = 2: N
+
         sum = sum + pArray(i);
     end
     if 2 <= sum && sum <= 6
@@ -141,7 +146,7 @@ end
 function result = logicalAND(a, b, c)
     %p2 . p4 . p6
     %p4 . p6 . p8
-    sum = a + b + c;
+    sum = a * b * c;
      if sum == 0
          result = true;
      else
@@ -151,7 +156,9 @@ function result = logicalAND(a, b, c)
 end
 
 function result = sameArray(pred, target)
-    if pred == target
+    comparedArray = (pred == target);    %returns array with values 1 (same index element equal)
+                                        % or 0 (same index element different)
+    if all(comparedArray==1)            % checks all values are 1 (a==b was true for every element)
         result = true;
     else
         result = false;
