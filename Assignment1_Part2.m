@@ -3,6 +3,7 @@ clear all
 close all
 
 BW = (imread('images/licoln.tif'));
+%BW = imresize(BW, 0.5)
 %BW = (imread('images/circles.png'));
 %BW = rgb2gray(BW);
 %BW = BW/255;
@@ -134,6 +135,10 @@ function result = checkTransitions(pArray)
             sum = sum + 1;
         end
         prevP = pArray(i);
+    end
+    
+    if pArray(9) <  pArray(2)
+        sum = sum + 1;
     end
     
     if sum == 1
