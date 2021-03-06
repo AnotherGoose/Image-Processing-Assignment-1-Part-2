@@ -2,7 +2,9 @@ clc
 clear all
 close all
 
-BW = (imread('images/licoln.tif'));
+img = (imread('images/noisy_stroke.tif'))/255;
+BW = medfilt2(img,[15 15]);
+
 %BW = imresize(BW, 0.5)
 %BW = (imread('images/circles.png'));
 %BW = rgb2gray(BW);
@@ -34,11 +36,11 @@ while same == 0
     counter = counter + 1;
 end
 
-BW = BW*255;
+img = img*255;
 tImg = tImg*255;
 
 figure();
-imshow(BW);
+imshow(img);
 
 figure();
 imshow(tImg);
