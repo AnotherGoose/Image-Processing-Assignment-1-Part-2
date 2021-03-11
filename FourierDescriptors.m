@@ -16,8 +16,6 @@ a = fft(s);
 
 aPruned = highPassPrune(a,threshold); %fourier descriptors
 
-    
-
 identify(I,aPruned,s);
 rotation(I,aPruned,s,50);
 scaling(I,aPruned,s,0.75);
@@ -57,21 +55,21 @@ function scaling(I,fourier_descriptors,boundary,alpha)
     hold on, plot(aApprox,'r'),plot(boundary,'g'),title("Scaling (\alpha="+alpha+")");
 end
 
-
 function starting_point(I,fourier_descriptors,boundary,k0)
     
     % Transform boundary
     [cols rows] = size(boundary);
+    N = rows;
     for k = 1:rows
         try
-            boundary(k) = boundary(k-k0) %Is this the right way to deal with k-k0 <1 ?
+            boundary(k) = boundary(k-k0); %Is this the right way to deal with k-k0 <1 ?
         catch
             
         end
     end
     % Transform fourier descriptor
     for u = 1:rows
-        fourier_descriptors = fourier_descriptors*exp(-j*2*pi*k0*u/rows); % Use N or K? Inconsistency within slides..
+        fourier_descriptors = fourier_descriptors*exp((-j*2*pi*k0*u)/N);
     end
     
     aApprox = ifft(fourier_descriptors);
@@ -80,26 +78,14 @@ function starting_point(I,fourier_descriptors,boundary,k0)
     hold on, plot(aApprox,'r'),plot(boundary,'g'),title("Starting Point (\alpha="+k0+")");
 end
 
-function y = ddelta(x)
-    if x ==1
-        y=1;
-    else
-        y=0;
-    end
-end
-
 function translation(I,fourier_descriptors,boundary,delta)
-    % Transform boundary
-    boundary=boundary+complex(delta(1),delta(2));
-    [cols rows] = size(fourier_descriptors);
-
-    % Transform fourier descriptor
-    for u = 1:rows
-        fourier_descriptors(u)=fourier_descriptors(u)+complex(delta(1),delta(2))*ddelta(u); %dirac does nothing here?
-    end
     aApprox = ifft(fourier_descriptors);
-    subplot(1,5,5)
-    imshow((I));
+
+    boundary=boundary+complex(delta(1),delta(2));
+    aApprox=aApprox+complex(delta(1),delta(2));
+    
+    subplot(1,5,5),
+    imshow((I))
     hold on, plot(aApprox,'r'),plot(boundary,'g'),title("Translation (\delta=["+delta(1)+","+delta(2)+"])");
 end
 
@@ -108,7 +94,6 @@ function points = getSequenceOf2DPoints(img)
     [rows cols] = find(img~=0);
     points = bwtraceboundary(img, [rows(1), cols(1)], 'N');
 end
-
 
 function sampled = subsample(points, numberOfDesiredSamples)
     sampleFactor = length(points)/numberOfDesiredSamples;
