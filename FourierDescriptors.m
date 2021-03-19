@@ -7,21 +7,22 @@ K=128; % Number of coefficients
 threshold = 8; % Threshold to prune coefficients below
 
 %% Main
-I = imread('images/chromosome.tif');
+I = imread('images/leg_bone.tif');
 
 boundary = getSequenceOf2DPoints(I);
 sampledBoundary = subsample(boundary,K);
 s = writeEachPointAsComplex(sampledBoundary);
 a = fft(s);
 
+optimalCoefficients(a)
+
 aPruned = highPassPrune(a,threshold); %fourier descriptors
 
-    
-
+figure()    
 identify(I,aPruned,s);
 rotation(I,aPruned,s,50);
 scaling(I,aPruned,s,0.75);
-starting_point(I,aPruned,s,40);
+starting_point(I,aPruned,s,100);
 translation(I,aPruned,s,[100, 50]);
 Lgnd = legend('Fourier Descriptor','Translated Boundary');
 Lgnd.Position(1) = -0.05;
@@ -64,7 +65,7 @@ function starting_point(I,fourier_descriptors,boundary,k0)
     [cols rows] = size(boundary);
     for k = 1:rows
         try
-            boundary(k) = boundary(k-k0) %Is this the right way to deal with k-k0 <1 ?
+            boundary(k) = boundary(k-k0); %Is this the right way to deal with k-k0 <1 ?
         catch
             
         end
@@ -95,7 +96,7 @@ function translation(I,fourier_descriptors,boundary,delta)
 
     % Transform fourier descriptor
     for u = 1:rows
-        fourier_descriptors(u)=fourier_descriptors(u)+complex(delta(1),delta(2))*ddelta(u); %dirac does nothing here?
+        fourier_descriptors(u)=fourier_descriptors(u)+complex(delta(1),delta(2)).*ddelta(u); %dirac does nothing here?
     end
     aApprox = ifft(fourier_descriptors);
     subplot(1,5,5)
@@ -137,4 +138,21 @@ function pruned = highPassPrune(a,threshold)
             pruned(u) = 1;
         end
     end
+end
+
+function optimalCoefficients(a)
+    N = 50
+    for n = 2:N
+        aPruned = highPassPrune(a,n); %fourier descriptors
+
+        pow = aPruned.*conj(aPruned)
+        totalpow(n-1) = sum(pow);
+    end
+    figure()
+    plot(totalpow)
+    ylabel("Energy (J)")
+    xlabel("Coefficients")
+    title("Coefficient Signal Energy")
+    grid()
+    grid minor
 end
